@@ -19,7 +19,7 @@ public class Replay : MonoBehaviour
     float nextTimeToExecute; // time recorded at current index
     Boolean paused; 
     Boolean timeSkip; // if index suddenly changes
-    int alerts; //whether or not to create alert bars: 2 = need to decide, 1 = show alerts, 2 = no alerts
+    int alerts; //whether or not to create alert bars: 2 = need to decide (initial), 1 = show alerts,
     float simulatedTime; // time of replay system
     float playbackSpeed; 
     public string inputFileName;
@@ -179,10 +179,12 @@ public class Replay : MonoBehaviour
                 string modelID = seperatedInput[i,2];
                 createNewModel(modelID, i);
             }
+            // check if we need to move
             if (seperatedInput[i,0].Equals("M")) {
                 string modelID = seperatedInput[i,2];
                 moveModel(modelID, i);
             }
+            // check if we need to delete
             if (seperatedInput[i,0].Equals("remove")){
                 string modelID = seperatedInput[i,2];
                 disableModel(modelID, i, false);
@@ -205,6 +207,7 @@ public class Replay : MonoBehaviour
     // creates new model at index i
     // only used by Start()
     void createNewModel(string modelID, int i) {
+        // find first object that's not the person
         if (alerts == 2 && !modelID.Equals("H0")) {
             Debug.Log(seperatedInput[i,5]);
             if (string.Equals(seperatedInput[i,5],"noAlert") || string.Equals(seperatedInput[i,5],"alert")) alerts = 1;
@@ -258,8 +261,9 @@ public class Replay : MonoBehaviour
                     bar.transform.localScale += new Vector3(distanceBetween, 0, 0);
                     bar.transform.position += new Vector3((distanceBetween/2), 0, 0);
                 }
-                if (seperatedInput[i,5].Equals("alert")) nextFarLaneAlert = newObject;
-                else nextFarLaneAlert = null;
+                /*if (seperatedInput[i,5].Equals("alert")) nextFarLaneAlert = newObject;
+                else nextFarLaneAlert = null;*/
+                nextFarLaneAlert = newObject;
             }
             else {
                 if (nextNearLaneAlert != null) {
