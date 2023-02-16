@@ -62,7 +62,6 @@ public class Replay : MonoBehaviour
 
     void Update()
     {   
-        Debug.Log("index = " + index + "\t total lines = " + (seperatedInput.GetLength(0)-1));
         Debug.Log("timesince= " + Time.time + "\tnextTime = " + nextTimeToExecute + "\tsimTime = " + simulatedTime + "\tplaySpeed = " + playbackSpeed + "\tindex = " + index + "\tpaused = " + paused);
         if ((index < (seperatedInput.GetLength(0) - 2)) && (index >= 0)) {
             nextTimeToExecute = float.Parse(seperatedInput[index,1]);
@@ -75,8 +74,15 @@ public class Replay : MonoBehaviour
         }
 
         // p pauses and unpauses replay
-        if (Input.GetKeyDown(KeyCode.P) && (playbackSpeed != 0)) { // does playbackspeed matter?
-            if (paused == false) paused = true;
+        // executes all lines at current time
+        if (Input.GetKeyDown(KeyCode.P) && (playbackSpeed != 0)) {
+            if (paused == false) {
+                float currentTime;
+                if (playbackSpeed > 0) currentTime = float.Parse(seperatedInput[index-1,1]);
+                else currentTime = float.Parse(seperatedInput[index+1,1]);
+                executeTime(currentTime);
+                paused = true;
+            }
             else paused = false;
         }
 
@@ -88,7 +94,6 @@ public class Replay : MonoBehaviour
         }
         
         // left arrow key decreases playback speed by 1
-        // if (Input.GetKeyDown(KeyCode.LeftArrow) && playbackSpeed >= 2) playbackSpeed -= 1;
         if (Input.GetKeyDown(KeyCode.LeftArrow)) {
             if (playbackSpeed == 0) paused = false;
             if (playbackSpeed == 1) paused = true;
@@ -99,13 +104,12 @@ public class Replay : MonoBehaviour
         if (paused == true && Input.GetKeyDown(KeyCode.Period)) {
             if (playbackSpeed == -1) {
                 index += 2;
-                playbackSpeed = 1;
             }
             if (playbackSpeed == 0) {
                 index++;
-                playbackSpeed = 1;
             }
-            executeIndex(index);
+            playbackSpeed = 1;
+            executeTime(float.Parse(seperatedInput[index,1]));
             simulatedTime = nextTimeToExecute;
         }
 
@@ -113,13 +117,12 @@ public class Replay : MonoBehaviour
         if (paused == true && Input.GetKeyDown(KeyCode.Comma)) {
             if (playbackSpeed == 1) {
                 index -= 2;
-                playbackSpeed = -1;
             }
             if (playbackSpeed == 0) {
                 index--;
-                playbackSpeed = 1;
             }
-            executeIndex(index);
+            playbackSpeed = -1;
+            executeTime(float.Parse(seperatedInput[index,1]));
             simulatedTime = nextTimeToExecute;
         }
 
@@ -184,6 +187,14 @@ public class Replay : MonoBehaviour
         }
     }
 
+    // executes all lines with the given time
+    void executeTime(float time) {
+        while (float.Parse(seperatedInput[index,1]) == time) {
+            executeIndex(index);
+            simulatedTime += playbackSpeed * Time.deltaTime;
+        }
+    }
+
     // runs entire recording to fill allModels
     void Preload() {
         for (int i=0; i<seperatedInput.GetLength(0); i++) {
@@ -209,7 +220,7 @@ public class Replay : MonoBehaviour
     // returns 0 if invalid
     int indexFromTime(float t) {
         int closestIndex = 0;
-        if ((float.Parse(seperatedInput[seperatedInput.GetLength(0)-1,1]) <= t) || t <= 0) return 0;
+        if (t >= (float.Parse(seperatedInput[seperatedInput.GetLength(0)-1,1])) || t <= 0) return 0;
         for (int i=0; i<seperatedInput.GetLength(0); i++) {
             if((float.Parse(seperatedInput[i,1]) <= t)) closestIndex = i;
             else return closestIndex;
