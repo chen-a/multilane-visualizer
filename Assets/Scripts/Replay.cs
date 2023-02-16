@@ -62,9 +62,10 @@ public class Replay : MonoBehaviour
 
     void Update()
     {   
-        if ((index < seperatedInput.GetLength(0)) && (index >= 0)) {
+        Debug.Log("index = " + index + "\t total lines = " + (seperatedInput.GetLength(0)-1));
+        Debug.Log("timesince= " + Time.time + "\tnextTime = " + nextTimeToExecute + "\tsimTime = " + simulatedTime + "\tplaySpeed = " + playbackSpeed + "\tindex = " + index + "\tpaused = " + paused);
+        if ((index < (seperatedInput.GetLength(0) - 2)) && (index >= 0)) {
             nextTimeToExecute = float.Parse(seperatedInput[index,1]);
-            Debug.Log("timesince= " + Time.time + "\tnextTime = " + nextTimeToExecute + "\tsimTime = " + simulatedTime + "\tplaySpeed = " + playbackSpeed + "\tindex = " + index + "\tpaused = " + paused);
             // Do something if next time read is less than current time (when playbackspeed is positive)
             // or when previous time read is greater than current time (when playbackspeed is negative)
             while ((paused == false) && ((nextTimeToExecute <= simulatedTime && playbackSpeed > 0) || (nextTimeToExecute >= simulatedTime && playbackSpeed < 0))) {
@@ -124,7 +125,6 @@ public class Replay : MonoBehaviour
 
         // show trial number somewhere
         // NEXT: Skipping back in time
-        // show indicator bars
         // show data points (position, ...)
         // Error: should do nothing when index = 0 or index = last line -> just do nothing at last index
     }
@@ -159,15 +159,28 @@ public class Replay : MonoBehaviour
             if (playbackSpeed > 0) disableModel(modelID, index, true);
             else enableModel(modelID);
         }
-
-        if (playbackSpeed > 0) index++;
-        if (playbackSpeed < 0) index--; 
-        nextTimeToExecute = float.Parse(seperatedInput[index,1]);
-        // Notes lines are always at t=0, which breaks replay
-        if (seperatedInput[index, 0].Equals("Notes")) {
+        // do not increase index out of bounds if we are at the end
+        if (index < (seperatedInput.GetLength(0) - 1)) {
             if (playbackSpeed > 0) index++;
             if (playbackSpeed < 0) index--; 
+
+            // Notes lines are always at t=0, which breaks replay
+            if (seperatedInput[index, 0].Equals("Notes")) {
+                if (playbackSpeed > 0) index++;
+                if (playbackSpeed < 0) index--; 
+                
+            }
             nextTimeToExecute = float.Parse(seperatedInput[index,1]);
+        }
+        else {
+            if (playbackSpeed < 0) {
+                index--;
+                nextTimeToExecute = float.Parse(seperatedInput[index,1]);
+            }
+            else {
+                paused = true;
+                simulatedTime = nextTimeToExecute;
+            }
         }
     }
 
@@ -209,8 +222,6 @@ public class Replay : MonoBehaviour
     void createNewModel(string modelID, int i) {
         if (alerts == 2 && !modelID.Equals("H0")) alerts = 1;
         
-        Debug.Log("Model ID = " + modelID);
-        
         float xPos;
         float yPos;
         float zPos;
@@ -232,6 +243,7 @@ public class Replay : MonoBehaviour
             float yRotation = float.Parse(seperatedInput[i,10]);
             float zRotation = float.Parse(seperatedInput[i,11]);
 
+            // get car model with same name
             GameObject findModel;
             string modelName = seperatedInput[i,3];
             if (modelName.Equals("1_Infiniti")) findModel = car1;
@@ -245,24 +257,22 @@ public class Replay : MonoBehaviour
             if (seperatedInput[i,8].Equals("1.3")) {
                 if (nextFarLaneAlert != null) {
                     float distanceBetween = xPos - nextFarLaneAlert.transform.position.x;
-                    Debug.Log("far db = " + distanceBetween + "\txPos = " + xPos + "\t transformx = " + nextFarLaneAlert.transform.position.x + "\t zPos = " + zPos );
                     GameObject bar = GameObject.CreatePrimitive(PrimitiveType.Cube);
                     bar.transform.parent = nextFarLaneAlert.transform;
                     bar.transform.position = bar.transform.parent.position;
                     bar.transform.localScale += new Vector3(distanceBetween, 0, 0);
                     bar.transform.position += new Vector3((distanceBetween/2), 3, 0);
                 }
+                // if car being created has an alert
                 if (seperatedInput[i,5].Equals("alert")) {
                     nextFarLaneAlert = newObject;
-                    Debug.Log("nextFarLaneAlert added = " + modelID);
                 }
                 else nextFarLaneAlert = null;
             }
+            // same as above but for near lane
             else {
                 if (nextNearLaneAlert != null) {
                     float distanceBetween = nextNearLaneAlert.transform.position.x - xPos;
-                    Debug.Log("near db = " + distanceBetween + "\txPos = " + xPos + "\t transformx = " + nextNearLaneAlert.transform.position.x + "\t zPos = " + zPos);
-                    
                     GameObject bar = GameObject.CreatePrimitive(PrimitiveType.Cube);
                     bar.transform.parent = nextNearLaneAlert.transform;
                     bar.transform.position = bar.transform.parent.position;
@@ -271,7 +281,6 @@ public class Replay : MonoBehaviour
                 }
                 if (seperatedInput[i,5].Equals("alert")) {
                     nextNearLaneAlert = newObject;
-                    Debug.Log("nextNearLaneAlert added = " + modelID);
                 }
                 else nextNearLaneAlert = null;
             }
