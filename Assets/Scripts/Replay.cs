@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class Replay : MonoBehaviour
 {
-    string[,] seperatedInput; // stores output data file
+    string[,]seperatedInput; // stores output data file
     Dictionary<string, GameObject> allModels; // holds all models that move
     Dictionary<string, GameObject> activeModels; // holds all models visible in scene
     public GameObject car1; // 1_infiniti
@@ -19,13 +19,13 @@ public class Replay : MonoBehaviour
     float nextTimeToExecute; // time recorded at current index
     Boolean paused; 
     Boolean timeSkip; // if index suddenly changes
-    int alerts; //whether or not to create alert bars: 2 = need to decide (initial), 1 = show alerts,
+    int alerts; //whether or not to create alert bars: 2 = need to decide, 1 = show alerts, 2 = no alerts
     float simulatedTime; // time of replay system
     float playbackSpeed; 
     public string inputFileName;
     public float startTime;
-    GameObject nextNearLaneAlert;
-    GameObject nextFarLaneAlert;
+    GameObject nextNearLaneAlert; // car in near lane that alert starts at
+    GameObject nextFarLaneAlert; // car in far lane that alert starts at
 
     void Start()
     {
@@ -44,7 +44,7 @@ public class Replay : MonoBehaviour
         
         // initialize variables
         index = indexFromTime(startTime);
-        Debug.Log("FOUND INDEX = " + index);
+        Debug.Log("STARTING INDEX = " + index);
         if (index == 0) simulatedTime = 0;
         else simulatedTime = startTime;
         allModels = new Dictionary<string, GameObject>();
@@ -207,81 +207,77 @@ public class Replay : MonoBehaviour
     // creates new model at index i
     // only used by Start()
     void createNewModel(string modelID, int i) {
-        // find first object that's not the person
-        if (alerts == 2 && !modelID.Equals("H0")) {
-            Debug.Log(seperatedInput[i,5]);
-            if (string.Equals(seperatedInput[i,5],"noAlert") || string.Equals(seperatedInput[i,5],"alert")) alerts = 1;
-            else alerts = 0;
-        }
-        string modelName = seperatedInput[i,3];
-        float xPos = float.Parse(seperatedInput[i,4]);
+        if (alerts == 2 && !modelID.Equals("H0")) alerts = 1;
+        
+        Debug.Log("Model ID = " + modelID);
+        
+        float xPos;
         float yPos;
         float zPos;
-        if (alerts != 1) {
-            yPos = float.Parse(seperatedInput[i,5]);
-            zPos = float.Parse(seperatedInput[i,6]);
-        }
-        else {
-            yPos = float.Parse(seperatedInput[i,6]);
-            zPos = float.Parse(seperatedInput[i,7]);
-        }
         GameObject newObject;
-        if (modelID.Equals("H0")) newObject = Instantiate(playerModel, new Vector3(xPos, yPos, zPos), Quaternion.identity);
+        // create player model
+        if (modelID.Equals("H0")) {
+            xPos = float.Parse(seperatedInput[i,3]);
+            yPos = float.Parse(seperatedInput[i,4]);
+            zPos = float.Parse(seperatedInput[i,5]);
+            newObject = Instantiate(playerModel, new Vector3(xPos, yPos, zPos), Quaternion.identity);
+        }
+        // create car model
         else {
-            float xr;
-            float yr;
-            float zr;
-            if (alerts != 1) {
-                xr = float.Parse(seperatedInput[i,8]);
-                yr = float.Parse(seperatedInput[i,9]);
-                zr = float.Parse(seperatedInput[i,10]);
-            }
-            else {
-                xr = float.Parse(seperatedInput[i,9]);
-                yr = float.Parse(seperatedInput[i,10]);
-                zr = float.Parse(seperatedInput[i,11]);
-            }
+            xPos = float.Parse(seperatedInput[i,6]);
+            yPos = float.Parse(seperatedInput[i,7]);
+            zPos = float.Parse(seperatedInput[i,8]);
+
+            float xRotation = float.Parse(seperatedInput[i,9]);
+            float yRotation = float.Parse(seperatedInput[i,10]);
+            float zRotation = float.Parse(seperatedInput[i,11]);
+
             GameObject findModel;
+            string modelName = seperatedInput[i,3];
             if (modelName.Equals("1_Infiniti")) findModel = car1;
             else if (modelName.Equals("2_AudiS5")) findModel = car2;
             else if (modelName.Equals("3_Ford")) findModel = car3;
             else if (modelName.Equals("4_VW")) findModel = car4;
             else findModel = car5;
-            newObject = Instantiate(findModel, new Vector3(xPos, yPos, zPos), Quaternion.Euler(xr, yr, zr));
-        }
-        if (alerts == 1) {
-            // 1.3 means far lane
-            if (float.Parse(seperatedInput[i,8]) == 1.3) {
+            newObject = Instantiate(findModel, new Vector3(xPos, yPos, zPos), Quaternion.Euler(xRotation, yRotation, zRotation));
+
+            // z = 1.3 means far lane
+            if (seperatedInput[i,8].Equals("1.3")) {
                 if (nextFarLaneAlert != null) {
-                    float distanceBetween = nextFarLaneAlert.transform.position.x - yPos;
-                    Debug.Log("db = " + distanceBetween + "\tyPos = " + yPos + "\t transformx = " + nextNearLaneAlert.transform.position.x);
+                    float distanceBetween = xPos - nextFarLaneAlert.transform.position.x;
+                    Debug.Log("far db = " + distanceBetween + "\txPos = " + xPos + "\t transformx = " + nextFarLaneAlert.transform.position.x + "\t zPos = " + zPos );
                     GameObject bar = GameObject.CreatePrimitive(PrimitiveType.Cube);
                     bar.transform.parent = nextFarLaneAlert.transform;
                     bar.transform.position = bar.transform.parent.position;
                     bar.transform.localScale += new Vector3(distanceBetween, 0, 0);
-                    bar.transform.position += new Vector3((distanceBetween/2), 0, 0);
+                    bar.transform.position += new Vector3((distanceBetween/2), 3, 0);
                 }
-                /*if (seperatedInput[i,5].Equals("alert")) nextFarLaneAlert = newObject;
-                else nextFarLaneAlert = null;*/
-                nextFarLaneAlert = newObject;
+                if (seperatedInput[i,5].Equals("alert")) {
+                    nextFarLaneAlert = newObject;
+                    Debug.Log("nextFarLaneAlert added = " + modelID);
+                }
+                else nextFarLaneAlert = null;
             }
             else {
                 if (nextNearLaneAlert != null) {
-                    float distanceBetween = yPos - nextNearLaneAlert.transform.position.x;
-                    Debug.Log("db = " + distanceBetween + "\tyPos = " + yPos + "\t transformx = " + nextNearLaneAlert.transform.position.x);
+                    float distanceBetween = nextNearLaneAlert.transform.position.x - xPos;
+                    Debug.Log("near db = " + distanceBetween + "\txPos = " + xPos + "\t transformx = " + nextNearLaneAlert.transform.position.x + "\t zPos = " + zPos);
                     
                     GameObject bar = GameObject.CreatePrimitive(PrimitiveType.Cube);
                     bar.transform.parent = nextNearLaneAlert.transform;
                     bar.transform.position = bar.transform.parent.position;
                     bar.transform.localScale += new Vector3(distanceBetween, 0, 0);
-                    bar.transform.position -= new Vector3((distanceBetween/2), 0, 0);
+                    bar.transform.position -= new Vector3((distanceBetween/2), -3, 0);
                 }
-                if (seperatedInput[i,5].Equals("alert")) nextNearLaneAlert = newObject;
+                if (seperatedInput[i,5].Equals("alert")) {
+                    nextNearLaneAlert = newObject;
+                    Debug.Log("nextNearLaneAlert added = " + modelID);
+                }
                 else nextNearLaneAlert = null;
             }
         }
         allModels.Add(modelID, newObject);
-        Debug.Log("new car added = " + modelID);
+        Debug.Log("new model added = " + modelID);
     }
 
     // move a model at index i
