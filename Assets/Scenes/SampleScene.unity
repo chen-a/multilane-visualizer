@@ -817,7 +817,7 @@ MonoBehaviour:
   playerModel: {fileID: 4731553099984317080, guid: 712c5074fbff1734dbd4a53312fd7909,
     type: 3}
   inputFileName: test6_rawFile_2022-11-28_6-49-24
-  startTime: 70
+  startTime: 0
 --- !u!4 &1716625823
 Transform:
   m_ObjectHideFlags: 0
