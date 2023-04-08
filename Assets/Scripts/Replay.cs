@@ -26,6 +26,11 @@ public class Replay : MonoBehaviour
     public float startTime;
     GameObject nextNearLaneAlert; // car in near lane that alert starts at
     GameObject nextFarLaneAlert; // car in far lane that alert starts at
+    private Color[] alert_colors; 
+    private int alert_colors_index_near;
+    private int alert_colors_index_far;
+    public float skipToTime; // time to skip to while running
+    private float storedSkipTime; // used to deetect change in skipToTime;
 
     void Start()
     {
@@ -50,13 +55,21 @@ public class Replay : MonoBehaviour
         allModels = new Dictionary<string, GameObject>();
         activeModels = new Dictionary<string, GameObject>();
         paused = false;
-        playbackSpeed = 1;
+        playbackSpeed = 1; // seconds of recorded data played per second in real time
         alerts = 2;
         nextTimeToExecute = 0;
         if (index == 0) timeSkip = false;
         else timeSkip = true;
         nextNearLaneAlert = null;
         nextFarLaneAlert = null;
+        alert_colors = new Color[3];
+        alert_colors[0] = new Color(1f, 0.5f, 0.4f, 0.7f); //Color orange;
+        alert_colors[1] = new Color(0f, 0f, 1f, 0.7f); //Color blue
+        alert_colors[2] = new Color(0.8f, 0.4f, 0.1f, 0.7f); //Color pink;
+        alert_colors_index_near = 0;
+        alert_colors_index_far = 0;
+        skipToTime = 0;
+        storedSkipTime = 0;
         Preload();
     }
 
@@ -126,9 +139,19 @@ public class Replay : MonoBehaviour
             simulatedTime = nextTimeToExecute;
         }
 
+        //  check if we need to skip to a new time
+        if (skipToTime != storedSkipTime) {
+            int newIndex = indexFromTime(skipToTime);
+            index = newIndex;
+            nextTimeToExecute = float.Parse(seperatedInput[index,1]);
+            simulatedTime = nextTimeToExecute;
+            playbackSpeed = 1;
+            timeSkip = true;
+            storedSkipTime = skipToTime;
+        }
+
         // show trial number somewhere
         // NEXT: Skipping back in time
-        // show data points (position, ...)
         // Error: should do nothing when index = 0 or index = last line -> just do nothing at last index
     }
 
@@ -213,6 +236,11 @@ public class Replay : MonoBehaviour
                 string modelID = seperatedInput[i,2];
                 disableModel(modelID, i, false);
             }
+            // ensures the scene is clear
+            foreach(KeyValuePair<string, GameObject> car in activeModels) {
+                car.Value.SetActive(false);
+            }
+            activeModels.Clear();
         }
     } 
 
@@ -271,8 +299,11 @@ public class Replay : MonoBehaviour
                     GameObject bar = GameObject.CreatePrimitive(PrimitiveType.Cube);
                     bar.transform.parent = nextFarLaneAlert.transform;
                     bar.transform.position = bar.transform.parent.position;
-                    bar.transform.localScale += new Vector3(distanceBetween, 0, 0);
+                    bar.transform.localScale += new Vector3(distanceBetween - 1, -0.5f, -0.7f); // cube created of size 1, y should be 0.5f, z should be 0.3f
                     bar.transform.position += new Vector3((distanceBetween/2), 3, 0);
+                    bar.transform.GetComponent<MeshRenderer>().material = new Material(Shader.Find("Transparent/Diffuse")); // sets material type to be transparent (to see player model behind it)
+                    bar.transform.GetComponent<MeshRenderer>().material.color = alert_colors[alert_colors_index_far];
+                    alert_colors_index_far = (alert_colors_index_far + 1) % alert_colors.Length;
                 }
                 // if car being created has an alert
                 if (seperatedInput[i,5].Equals("alert")) {
@@ -287,8 +318,11 @@ public class Replay : MonoBehaviour
                     GameObject bar = GameObject.CreatePrimitive(PrimitiveType.Cube);
                     bar.transform.parent = nextNearLaneAlert.transform;
                     bar.transform.position = bar.transform.parent.position;
-                    bar.transform.localScale += new Vector3(distanceBetween, 0, 0);
+                    bar.transform.localScale += new Vector3(distanceBetween - 1, -0.5f, -0.7f);
                     bar.transform.position -= new Vector3((distanceBetween/2), -3, 0);
+                    bar.transform.GetComponent<MeshRenderer>().material = new Material(Shader.Find("Transparent/Diffuse"));
+                    bar.transform.GetComponent<MeshRenderer>().material.color = alert_colors[alert_colors_index_near];
+                    alert_colors_index_near = (alert_colors_index_near + 1) % alert_colors.Length;
                 }
                 if (seperatedInput[i,5].Equals("alert")) {
                     nextNearLaneAlert = newObject;
@@ -297,6 +331,7 @@ public class Replay : MonoBehaviour
             }
         }
         allModels.Add(modelID, newObject);
+        //activeModels.Add(modelID, newObject); //lags preload?
         Debug.Log("new model added = " + modelID);
     }
 
