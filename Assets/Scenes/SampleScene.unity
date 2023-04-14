@@ -714,7 +714,7 @@ PrefabInstance:
     - target: {fileID: 2729303378044233022, guid: 35ac9bf478222624ba320dd2d4641f89,
         type: 3}
       propertyPath: m_RootOrder
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2729303378044233022, guid: 35ac9bf478222624ba320dd2d4641f89,
         type: 3}
@@ -814,10 +814,10 @@ MonoBehaviour:
   car3: {fileID: 1000011854391512, guid: 1ff29a21283aa5243976746678d616ea, type: 3}
   car4: {fileID: 171328, guid: de6ed1c4d562e904dbc67ec2b2a5c11f, type: 3}
   car5: {fileID: 1000013171677540, guid: 01a928b668350044db795c8675b1f6e6, type: 3}
-  playerModel: {fileID: 4731553099984317080, guid: 712c5074fbff1734dbd4a53312fd7909,
-    type: 3}
+  playerModel: {fileID: 0}
   inputFileName: test6_rawFile_2022-11-28_6-49-24
   startTime: 0
+  skipToTime: 0
 --- !u!4 &1716625823
 Transform:
   m_ObjectHideFlags: 0
@@ -831,7 +831,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 1
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1716625824
 MonoBehaviour:
