@@ -151,7 +151,6 @@ public class Replay : MonoBehaviour
         }
 
         // show trial number somewhere
-        // NEXT: Skipping back in time
         // Error: should do nothing when index = 0 or index = last line -> just do nothing at last index
     }
 
@@ -160,6 +159,7 @@ public class Replay : MonoBehaviour
         // if time is skipped, clear the scene
         if (timeSkip == true) {
             foreach(KeyValuePair<string, GameObject> item in activeModels) {
+                item.Value.transform.position = new Vector3(300, 0, 0); // move model off screen to not cause flashes near participant when re-enabled
                 item.Value.SetActive(false);
             }
             activeModels.Clear();
@@ -236,12 +236,12 @@ public class Replay : MonoBehaviour
                 string modelID = seperatedInput[i,2];
                 disableModel(modelID, i, false);
             }
-            // ensures the scene is clear
-            foreach(KeyValuePair<string, GameObject> car in activeModels) {
-                car.Value.SetActive(false);
-            }
-            activeModels.Clear();
         }
+        // ensures the scene is clear
+        foreach(KeyValuePair<string, GameObject> car in activeModels) {
+            car.Value.SetActive(false);
+        }
+        activeModels.Clear();
     } 
 
     // returns index of seperatedInput where time is exactly or right before given input time
@@ -331,7 +331,7 @@ public class Replay : MonoBehaviour
             }
         }
         allModels.Add(modelID, newObject);
-        //activeModels.Add(modelID, newObject); //lags preload?
+        activeModels.Add(modelID, newObject); //lags preload?
         Debug.Log("new model added = " + modelID);
     }
 
@@ -358,6 +358,7 @@ public class Replay : MonoBehaviour
 
     // "delete" a model at index i by disabling it
     void disableModel(string modelID, int i, Boolean removeFromActive) {
+        allModels[modelID].transform.position = new Vector3(300, 0, 0); // move model off screen to not cause flashes near participant when re-enabled
         allModels[modelID].SetActive(false);
         if (removeFromActive == true) activeModels.Remove(modelID);
     }

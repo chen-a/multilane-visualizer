@@ -901,7 +901,7 @@ MonoBehaviour:
   playerModel: {fileID: 4731553099984317080, guid: 712c5074fbff1734dbd4a53312fd7909,
     type: 3}
   inputFileName: 2013_rawFile_2023-1-30_12-16-02
-  startTime: 250
+  startTime: 0
   skipToTime: 0
 --- !u!4 &1716625823
 Transform:
@@ -925,7 +925,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1716625821}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ca506680e643d094d9d8a88fce8385bf, type: 3}
   m_Name: 
