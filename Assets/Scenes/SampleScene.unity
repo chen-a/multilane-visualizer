@@ -320,14 +320,14 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -3.03}
+  m_LocalRotation: {x: 0.28122514, y: 0.078608744, z: -0.0231209, w: 0.9561373}
+  m_LocalPosition: {x: -1.76, y: 2.95, z: -2.65}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1045848416}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 32.78, y: 9.4, z: 0}
 --- !u!114 &963194229
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -687,7 +687,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 976217138}
   m_LocalRotation: {x: 0.36118117, y: 0.13359512, z: -0.0523688, w: 0.92138916}
-  m_LocalPosition: {x: -9.6, y: 26.69, z: -26.7}
+  m_LocalPosition: {x: -13.35, y: 38.92, z: -39.36}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -900,7 +900,7 @@ MonoBehaviour:
   car5: {fileID: 1000013171677540, guid: 01a928b668350044db795c8675b1f6e6, type: 3}
   playerModel: {fileID: 4731553099984317080, guid: 712c5074fbff1734dbd4a53312fd7909,
     type: 3}
-  inputFileName: 2013_rawFile_2023-1-30_12-16-02
+  inputFileName: 1045_rawFile_2023-3-07_4-07-51
   startTime: 0
   skipToTime: 0
 --- !u!4 &1716625823
